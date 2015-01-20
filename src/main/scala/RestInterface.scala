@@ -30,24 +30,27 @@ trait RestApi extends HttpService with ActorLogging {
 
   def routes: Route =
     logRequest("routing reached") {
-      path("lunches") {
-        put {
-          logRequest("put reached") {
-            entity(as[Lunches]) { lunches => requestContext =>
-              log.debug("Got put Lunches request")
-              val responder = createResponder(requestContext)
-              indexer.ask(lunches).pipeTo(responder)
+      logResponse("response reached") {
+        path("lunches") {
+          put {
+            logRequest("put reached") {
+              entity(as[Lunches]) { lunches => requestContext =>
+                log.debug("Got put Lunches request")
+                val responder = createResponder(requestContext)
+                println(s"Sending lunches to indexer: ${lunches}")
+                indexer.ask(lunches).pipeTo(responder)
+              }
             }
-          }
-        } ~
-        get {
-          logRequest("get reached") { requestContext =>
-            log.debug("responder reached")
-            val responder = createResponder(requestContext)
-            log.debug("responder created")
-            indexer.ask(GetLunches).pipeTo(responder)
-            log.debug("piped")
-          }
+          } ~
+            get {
+              logRequest("get reached") { requestContext =>
+                log.debug("responder reached")
+                val responder = createResponder(requestContext)
+                log.debug("responder created")
+                indexer.ask(GetLunches).pipeTo(responder)
+                log.debug("piped")
+              }
+            }
         }
       }
     }

@@ -5,7 +5,7 @@ import akka.actor.{PoisonPill, Actor}
 object LunchProtocol {
   import spray.json._
 
-  case class Lunch(event:String, nrOfTickets:Int)
+  case class Lunch(date:String, meal:String, restaurant:String)
 
   case class Lunches(lunches: Vector[Lunch])
 
@@ -16,7 +16,7 @@ object LunchProtocol {
   //----------------------------------------------
 
   object Lunch extends DefaultJsonProtocol {
-    implicit val format = jsonFormat2(Lunch.apply)
+    implicit val format = jsonFormat3(Lunch.apply)
   }
 
   object Lunches extends DefaultJsonProtocol {
@@ -32,10 +32,14 @@ class Indexer extends Actor {
   def receive = {
 
     case GetLunches => {
-      val lunch = Lunch(event="E", nrOfTickets = 10)
+      val lunch = Lunch(date="E", meal = "M", restaurant = "R")
       val lunches = Lunches(Vector[Lunch](lunch))
       println(s"JSON: ${lunches.toJson}")
       sender ! lunches
+    }
+
+    case Lunches(lunches) => {
+      println(s"Got lunches: ${lunches.toJson}")
     }
   }
 }
