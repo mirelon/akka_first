@@ -42,15 +42,15 @@ trait RestApi extends HttpService with ActorLogging {
               }
             }
           } ~
-            get {
-              logRequest("get reached") { requestContext =>
-                log.debug("responder reached")
-                val responder = createResponder(requestContext)
-                log.debug("responder created")
-                indexer.ask(GetLunches).pipeTo(responder)
-                log.debug("piped")
-              }
+          get {
+            logRequest("get reached") { requestContext =>
+              log.debug("responder reached")
+              val responder = createResponder(requestContext)
+              log.debug("responder created")
+              indexer.ask(GetLunches).pipeTo(responder)
+              log.debug("piped")
             }
+          }
         }
       }
     }
