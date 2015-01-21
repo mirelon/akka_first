@@ -27,13 +27,18 @@ trait RestApi extends HttpService with ActorLogging {
   import akka.pattern.pipe
 
   val indexer = context.actorOf(Props[Indexer])
+  val searcher = context.actorOf(Props[Searcher])
 
   def routes: Route =
     logRequest("routing reached") {
       logResponse("response reached") {
         path("lunches") {
-          put {
-            logRequest("put reached") {
+          put { requestContext =>
+            indexer ! IndexAllLunches
+            requestContext.complete(StatusCodes.Accepted)
+          } ~
+          post {
+            logRequest("post reached") {
               entity(as[Lunches]) { lunches => requestContext =>
                 log.debug("Got put Lunches request")
                 val responder = createResponder(requestContext)
@@ -47,7 +52,7 @@ trait RestApi extends HttpService with ActorLogging {
               log.debug("responder reached")
               val responder = createResponder(requestContext)
               log.debug("responder created")
-              indexer.ask(GetLunches).pipeTo(responder)
+              searcher.ask(GetLunches).pipeTo(responder)
               log.debug("piped")
             }
           }
