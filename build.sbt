@@ -2,7 +2,7 @@ name := "akka_first"
 
 version := "1.0"
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.4"
 
 val akkaVersion = "2.3.8"
 val sprayVersion = "1.3.2"
