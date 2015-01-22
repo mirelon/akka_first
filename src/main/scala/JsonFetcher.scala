@@ -16,19 +16,18 @@ class JsonFetcher extends Actor with ActorLogging {
 
   def receive = {
     case IndexAllLunches => {
-      println("JsonFetcher got request")
       val capturedSender = sender
       val url = "https://spreadsheets.google.com/feeds/list/0AmHPGqfSTzZhdE9qRzdIdU5qdS1RZkZINGx4aUl6a3c/od6/public/values?alt=json"
       val pipeline: HttpRequest => Future[Lunches] = sendReceive ~> unmarshal[Lunches]
       val response = pipeline(Get(url))
+      log.info(s"Sent request to ${url}")
       response.onComplete {
         case Success(value) => {
-          println("Got spreadsheet response")
-          println(value)
+          log.debug("Got spreadsheet response")
           capturedSender ! value
         }
         case Failure(NonFatal(e)) => {
-          println(s"Failure: ${e}")
+          log.error(s"Failure when communicating with spreadsheet API: ${e}")
         }
       }
 

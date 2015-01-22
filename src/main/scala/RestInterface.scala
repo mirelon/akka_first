@@ -8,6 +8,7 @@ import spray.http.StatusCodes
 import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.{Failure, Success}
 
 /**
  * @author miso
@@ -33,6 +34,12 @@ trait RestApi extends HttpService with ActorLogging {
     logRequest("routing reached") {
       logResponse("response reached") {
         path("lunches") {
+          delete { requestContext =>
+            (indexer ? DeleteIndex) andThen {
+              case Success(_) => requestContext.complete(StatusCodes.OK)
+              case Failure(_) => requestContext.complete(StatusCodes.InternalServerError)
+            }
+          } ~
           put { requestContext =>
             indexer ! IndexAllLunches
             requestContext.complete(StatusCodes.Accepted)
@@ -42,7 +49,6 @@ trait RestApi extends HttpService with ActorLogging {
               entity(as[Lunches]) { lunches => requestContext =>
                 log.debug("Got put Lunches request")
                 val responder = createResponder(requestContext)
-                println(s"Sending lunches to indexer: ${lunches}")
                 indexer.ask(lunches).pipeTo(responder)
               }
             }

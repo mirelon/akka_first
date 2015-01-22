@@ -31,6 +31,8 @@ object LunchProtocol {
 
   case object IndexAllLunches
 
+  case object DeleteIndex
+
   //----------------------------------------------
   // JSON
   //----------------------------------------------
@@ -59,7 +61,6 @@ object LunchProtocol {
         )))
         Right(Lunches(rows.to[Vector]))
       } catch { case x: Throwable =>
-        println(x)
         Left(MalformedContent("Could not unmarshall spreadsheet response.", x))
       }
     }

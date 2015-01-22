@@ -25,8 +25,8 @@ class Actress extends Actor with ActorLogging {
       val resp: Future[SolrQueryResponse] =
         (Solr.Client.manager ? Solr.Request("http://localhost:8983/solr/obedy", req)).mapTo[SolrQueryResponse]
       resp.onComplete {
-        case Success(value) => println(value)
-        case Failure(NonFatal(e)) => println(e)
+        case Success(value) => log.debug(s"${value}")
+        case Failure(NonFatal(e)) => log.error(s"${e}")
       }
       log.info("Message to SOLR sent")
   }
