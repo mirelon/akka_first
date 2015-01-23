@@ -27,7 +27,7 @@ trait RestApi extends HttpService with ActorLogging {
   import akka.pattern.ask
   import akka.pattern.pipe
 
-  val indexer = context.actorOf(Props[Indexer])
+  val indexer = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5002/user/indexer")
   val searcher = context.actorOf(Props[Searcher])
 
   def routes: Route =
@@ -67,12 +67,12 @@ trait RestApi extends HttpService with ActorLogging {
     }
 
   def createResponder(requestContext:RequestContext) = {
-    context.actorOf(Props(new Responder(requestContext, indexer)))
+    context.actorOf(Props(new Responder(requestContext)))
   }
 
 }
 
-class Responder(requestContext:RequestContext, indexer:ActorRef) extends Actor with ActorLogging {
+class Responder(requestContext:RequestContext) extends Actor with ActorLogging {
 
   override def receive: Receive = {
 

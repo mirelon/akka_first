@@ -1,6 +1,8 @@
 package akka_first
 
 import akka.actor.{Props, ActorLogging, PoisonPill, Actor}
+import akka.cluster.Cluster
+import akka.cluster.ClusterEvent._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.codemettle.akkasolr.Solr
@@ -18,13 +20,31 @@ class Indexer extends Actor with ActorLogging {
   import spray.json._
   import context.dispatcher
 
+  val cluster = Cluster(context.system)
   implicit val timeout = Timeout(10 seconds)
 
   val url = "http://localhost:8983/solr/obedy"
 
   val jsonFetcher = context.actorOf(Props[JsonFetcher])
 
+  override def preStart = {
+    if(context.system.settings.config.getStringList("akka.cluster.roles").contains("indexer")) {
+      cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
+      log.debug("SUBSCRIBED")
+    }
+  }
+
+  override def postStop = cluster.unsubscribe(self)
+
   def receive = {
+
+    case MemberUp(member) =>
+      log.info("MemberUp: {}", member.address)
+    case UnreachableMember(member) =>
+      log.info("UnreachableMember: {}", member.address)
+    case MemberRemoved(member, previousStatus) =>
+      log.info("MemberRemoved: {} after {}", member.address, previousStatus)
+    case _:MemberEvent => // ignore
 
     case IndexAllLunches => {
       log.debug(s"Got request to reindex all lunches")
@@ -55,7 +75,7 @@ class Indexer extends Actor with ActorLogging {
         case Success(value) => {
           log.debug(s"Solr returned ${value.status}")
           value.status match {
-            case SolrException.ErrorCode.UNKNOWN.code ⇒ log.info(s"Succesfully added ${value.results.documents.size} documents to Solr")
+            case SolrException.ErrorCode.UNKNOWN.code ⇒ log.info(s"Succesfully added ${lunches.size} documents to Solr")
             case _ ⇒ log.error(s"Error adding to SOLR: ${value}")
           }
         }
