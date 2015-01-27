@@ -10,7 +10,7 @@
 
   <xs:complexType name="Obedy">
     <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="obedy" type="Obed"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="obed" type="Obed"/>
     </xs:sequence>
   </xs:complexType>
 </xs:schema>
