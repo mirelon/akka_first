@@ -10,8 +10,6 @@ import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
-import ExecutionContext.Implicits.global
-
 /**
  * @author miso
  */

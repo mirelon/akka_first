@@ -26,6 +26,9 @@ object First extends App {
     milaJovovich ! Raven
   } else if(roles.contains("indexer")) {
     system.actorOf(Props[Indexer], "indexer")
+  } else if(roles.contains("soap")) {
+    val soapInterface: ActorRef = system.actorOf(Props[SoapInterface])
+    IO(Http) ! Http.Bind(listener = soapInterface, interface = "localhost", port = 5000)
   }
 
 

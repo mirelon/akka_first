@@ -9,26 +9,20 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
+import akka.pattern.{ask, pipe}
 
 /**
  * @author miso
  */
-class RestInterface extends HttpServiceActor with RestApi {
-  def receive = runRoute(routes)
-}
-
-trait RestApi extends HttpService with ActorLogging {
+class RestInterface extends HttpServiceActor with HttpService with ActorLogging {
   actor: Actor =>
-
-  import context.dispatcher
 
   implicit val timeout = Timeout(10 seconds)
 
-  import akka.pattern.ask
-  import akka.pattern.pipe
-
   val indexer = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5002/user/indexer")
   val searcher = context.actorOf(Props[Searcher])
+
+  override def receive: Actor.Receive = runRoute(routes)
 
   def routes: Route =
     logRequest("routing reached") {
@@ -69,7 +63,6 @@ trait RestApi extends HttpService with ActorLogging {
   def createResponder(requestContext:RequestContext) = {
     context.actorOf(Props(new Responder(requestContext)))
   }
-
 }
 
 class Responder(requestContext:RequestContext) extends Actor with ActorLogging {

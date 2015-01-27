@@ -18,7 +18,6 @@ import scala.util.{Failure, Success}
 class Indexer extends Actor with ActorLogging {
   import LunchProtocol._
   import spray.json._
-  import context.dispatcher
 
   val cluster = Cluster(context.system)
   implicit val timeout = Timeout(10 seconds)

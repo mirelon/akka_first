@@ -12,7 +12,6 @@ import scala.util.{Failure, Success}
  * @author miso
  */
 class JsonFetcher extends Actor with ActorLogging {
-  import context.dispatcher
 
   def receive = {
     case IndexAllLunches => {

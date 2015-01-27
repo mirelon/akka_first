@@ -16,7 +16,6 @@ import scala.util.{Failure, Success}
  */
 class Searcher extends Actor with ActorLogging {
   import LunchProtocol._
-  import context.dispatcher
   import spray.json._
 
   implicit val timeout = Timeout(10 seconds)
@@ -43,7 +42,5 @@ class Searcher extends Actor with ActorLogging {
         case Failure(NonFatal(e)) => log.error(s"Error communicating with SOLR: ${e}")
       }
     }
-
-
   }
 }
