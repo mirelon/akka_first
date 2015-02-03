@@ -10,6 +10,7 @@ import org.apache.cxf.transport.http_jetty.JettyDestinationFactory
 import org.apache.cxf.{BusFactory, Bus}
 import spray.can.Http
 import akka.io.IO
+import timing.Profiler
 
 /**
  * @author miso
@@ -39,8 +40,9 @@ object First extends App {
     bus.setExtension(new JettyDestinationFactory, classOf[HttpDestinationFactory])
     Endpoint.publish("http://localhost:5000/CustomerServicePort", new CustomerServicePortImpl(system))
     System.out.println("SOAP Server ready...")
+  } else if(roles.contains("profiler")) {
+    system.actorOf(Props[Profiler], "profiler")
   }
-
 
 
 

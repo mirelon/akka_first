@@ -6,6 +6,7 @@ import akka.actor._
 import spray.routing._
 import spray.http.StatusCodes
 import akka.util.Timeout
+import timing.ProfilingProtocol.Start
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
@@ -18,9 +19,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class RestInterface extends HttpServiceActor with HttpService with ActorLogging {
   actor: Actor =>
 
-  implicit val timeout = Timeout(10 seconds)
+  implicit val timeout = Timeout(100 seconds)
 
   val indexer = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5002/user/indexer")
+  val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5003/user/profiler")
   val searcher = context.actorOf(Props[Searcher])
 
   override def receive: Actor.Receive = runRoute(routes)
@@ -36,6 +38,7 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
             }
           } ~
           put { requestContext =>
+            profiler ! Start("Whole indexing")
             indexer ! IndexAllLunches
             requestContext.complete(StatusCodes.Accepted)
           } ~
