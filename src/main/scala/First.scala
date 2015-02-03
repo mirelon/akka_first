@@ -42,6 +42,8 @@ object First extends App {
     System.out.println("SOAP Server ready...")
   } else if(roles.contains("profiler")) {
     system.actorOf(Props[Profiler], "profiler")
+  } else if(roles.contains("meal_processor")) {
+    system.actorOf(Props[Profiler], "profiler")
   }
 
 

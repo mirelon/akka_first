@@ -1,5 +1,5 @@
 package akka_first
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Props, Actor, ActorLogging}
 import akka.util.Timeout
 import akka_first.LunchProtocol.{Lunch, Lunches, IndexAllLunches}
 import com.codemettle.akkasolr.Solr
@@ -10,7 +10,7 @@ import spray.http.HttpRequest
 import akka.pattern.ask
 import timing.ProfilingProtocol.{Stop, Start}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 import scala.util.{Random, Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,6 +26,7 @@ class JsonFetcher extends Actor with ActorLogging {
   def receive = {
     case IndexAllLunches => {
       val testTwoActors = false
+      val testProcessorActor = true
       val capturedSender = sender
       val url = "https://spreadsheets.google.com/feeds/list/0AmHPGqfSTzZhdE9qRzdIdU5qdS1RZkZINGx4aUl6a3c/od6/public/values?alt=json"
       val pipeline: HttpRequest => Future[Lunches] = sendReceive ~> unmarshal[Lunches]
@@ -38,11 +39,21 @@ class JsonFetcher extends Actor with ActorLogging {
           profiler ! Stop("Spreadsheet API")
           profiler ! Start("Preparing big data")
 
-          val big_data = Lunches((0 to 9999).map (i => {
+          val big_data_2 = Lunches((0 to 9999).map (i => {
             val r = new Random(i)
             Lunch(meal = r.nextString(200), restaurant = r.nextString(100), date = value.lunches(i % value.lunches.size).date)
           }).toVector)
           profiler ! Stop("Preparing big data")
+          profiler ! Start("Processing big data")
+          val big_data = if(testProcessorActor) {
+            new Lunches(Await.result(Future.sequence(big_data_2.lunches.map(x => {
+              val restaurantProcessor = context.actorOf(Props[RestaurantProcessor])
+              (restaurantProcessor ? x).mapTo[Lunch]
+            })), 1000 seconds))
+          } else {
+            new Lunches(big_data_2.lunches.map(x => new Lunch(meal = x.meal, restaurant = "prefix_" + x.restaurant, date = x.date)).toVector)
+          }
+          profiler ! Stop("Processing big data")
           profiler ! Start("Processing response")
           if (testTwoActors) {
             capturedSender ! big_data
