@@ -1,6 +1,13 @@
 package akka_first
+
+import javax.xml.ws.Endpoint
+
 import akka.actor.{ActorRef, Props, ActorSystem}
 import akka.cluster.Cluster
+import cc.notsoclever.customerservice.CustomerServicePortImpl
+import org.apache.cxf.transport.http.HttpDestinationFactory
+import org.apache.cxf.transport.http_jetty.JettyDestinationFactory
+import org.apache.cxf.{BusFactory, Bus}
 import spray.can.Http
 import akka.io.IO
 
@@ -27,8 +34,11 @@ object First extends App {
   } else if(roles.contains("indexer")) {
     system.actorOf(Props[Indexer], "indexer")
   } else if(roles.contains("soap")) {
-    val soapInterface: ActorRef = system.actorOf(Props[SoapInterface])
-    IO(Http) ! Http.Bind(listener = soapInterface, interface = "localhost", port = 5000)
+    System.out.println("Starting SOAP Server")
+    val bus: Bus = BusFactory.getDefaultBus
+    bus.setExtension(new JettyDestinationFactory, classOf[HttpDestinationFactory])
+    Endpoint.publish("http://localhost:5000/CustomerServicePort", new CustomerServicePortImpl(system))
+    System.out.println("SOAP Server ready...")
   }
 
 

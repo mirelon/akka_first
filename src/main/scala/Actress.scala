@@ -1,14 +1,8 @@
 package akka_first
 import akka.actor.{Actor, ActorLogging}
-import akka.pattern.ask
 import akka.util.Timeout
-import com.codemettle.akkasolr.Solr
-import com.codemettle.akkasolr.solrtypes.SolrQueryResponse
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
 
 /**
  * @author miso
@@ -18,14 +12,5 @@ class Actress extends Actor with ActorLogging {
   override def receive: Receive = {
     case Raven =>
       log.info("But I have ordered a crow!")
-      val doc = Map("date" -> "2015-01-16T00:00:00Z", "meal" -> "Pecena vrana", "restaurant" -> "Club Restaurant")
-      val req: Solr.SolrOperation = Solr.Update AddDocs doc commit true
-      val resp: Future[SolrQueryResponse] =
-        (Solr.Client.manager ? Solr.Request("http://localhost:8983/solr/obedy", req)).mapTo[SolrQueryResponse]
-      resp.onComplete {
-        case Success(value) => log.debug(s"${value}")
-        case Failure(NonFatal(e)) => log.error(s"${e}")
-      }
-      log.info("Message to SOLR sent")
   }
 }

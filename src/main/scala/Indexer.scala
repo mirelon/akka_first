@@ -1,12 +1,11 @@
 package akka_first
 
-import akka.actor.{Props, ActorLogging, PoisonPill, Actor}
+import akka.actor.{Props, ActorLogging, Actor}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.codemettle.akkasolr.Solr
-import com.codemettle.akkasolr.querybuilder.SolrQueryStringBuilder.{RawQuery, QueryPart}
 import com.codemettle.akkasolr.solrtypes.SolrQueryResponse
 import org.apache.solr.common.SolrException
 
@@ -14,6 +13,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class Indexer extends Actor with ActorLogging {
   import LunchProtocol._

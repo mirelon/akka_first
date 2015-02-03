@@ -2,11 +2,12 @@ package akka_first
 import akka.actor.{Actor, ActorLogging}
 import akka_first.LunchProtocol.{Lunches, IndexAllLunches}
 import spray.client.pipelining._
-import spray.http.{HttpRequest, HttpResponse}
+import spray.http.HttpRequest
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * @author miso

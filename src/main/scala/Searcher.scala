@@ -10,6 +10,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * @author miso
@@ -22,6 +23,7 @@ class Searcher extends Actor with ActorLogging {
 
   def receive = {
     case GetLunches => {
+      println("Searcher: Received message GetLunches")
       val capturedSender = sender
       val req: Solr.SolrOperation = Solr.Select(Solr.createQuery("*:*").toParams)
       val resp: Future[SolrQueryResponse] =
@@ -42,5 +44,6 @@ class Searcher extends Actor with ActorLogging {
         case Failure(NonFatal(e)) => log.error(s"Error communicating with SOLR: ${e}")
       }
     }
+    case x: Any => println(s"Searcher: Received other message: ${x}")
   }
 }

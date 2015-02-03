@@ -1,4 +1,4 @@
-import ScalaxbKeys._
+//import ScalaxbKeys._
 
 name := "akka_first"
 
@@ -8,6 +8,7 @@ scalaVersion := "2.11.5"
 
 val akkaVersion = "2.3.9"
 val sprayVersion = "1.3.2"
+val camelVersion = "2.14.1"
 
 // %% is for cross-building, i.e. the library will have appended scala version to its name
 
@@ -23,11 +24,17 @@ libraryDependencies ++= Seq(
   "org.apache.solr"           % "solr-solrj" % "4.10.3",
   "net.virtual-void"         %% "json-lenses" % "0.6.0",
   "org.scala-lang.modules"   %% "scala-xml" % "1.0.2",
-  "org.scala-lang.modules"   %% "scala-parser-combinators" % "1.0.1"
+  "org.scala-lang.modules"   %% "scala-parser-combinators" % "1.0.1",
+  "org.codehaus.woodstox"     % "woodstox-core-asl" % "4.4.1", // for building Endpoint from WSDL
+  "org.apache.camel"          % "camel-core" % camelVersion,
+  "org.apache.camel"          % "camel-cxf" % camelVersion,
+  "com.typesafe.akka"        %% "akka-camel" % akkaVersion,
+  "org.apache.cxf"            % "cxf-rt-transports-http-jetty" % "3.0.3"
 )
+//scalaxbSettings
+//
+//packageName in (Compile, scalaxb) := "akka_first"
+//async in (Compile, scalaxb) := true
+//sourceGenerators in Compile <+= scalaxb in Compile
 
-scalaxbSettings
-
-packageName in (Compile, scalaxb) := "akka_first"
-async in (Compile, scalaxb) := true
-sourceGenerators in Compile <+= scalaxb in Compile
+//seq(cxf.settings :_*)
