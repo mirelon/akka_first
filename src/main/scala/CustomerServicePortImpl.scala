@@ -7,6 +7,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import akka_first.{Searcher}
 import akka_first.LunchProtocol._
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -34,6 +35,8 @@ class CustomerServicePortImpl(system: ActorSystem) extends CustomerService {
       case result: Lunches => {
         val customer = new Customer()
         customer.setCustomerId(result.lunches.size)
+        val mapper: ObjectMapper = new ObjectMapper()
+        customer.setName(mapper.writeValueAsString(customer))
         Seq(customer)
       }
       case _ => null
