@@ -30,7 +30,9 @@ libraryDependencies ++= Seq(
   "org.apache.camel"           % "camel-cxf" % camelVersion,
   "com.typesafe.akka"         %% "akka-camel" % akkaVersion,
   "org.apache.cxf"             % "cxf-rt-transports-http-jetty" % "3.0.3",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.0"
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.0",
+  "com.typesafe.slick"        %% "slick" % "2.1.0",
+  "mysql"                      % "mysql-connector-java" % "5.1.34"
 )
 //scalaxbSettings
 //

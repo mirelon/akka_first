@@ -1,5 +1,6 @@
 package akka_first
 import akka_first.LunchProtocol._
+import slick.{Request, Requests}
 import spray.httpx.SprayJsonSupport._
 import akka.actor._
 
@@ -12,6 +13,8 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success}
 import akka.pattern.{ask, pipe}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.slick.driver.MySQLDriver.simple._
+import Database.dynamicSession
 
 /**
  * @author miso
@@ -24,6 +27,8 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
   val indexer = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5002/user/indexer")
   val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5003/user/profiler")
   val searcher = context.actorOf(Props[Searcher])
+  val jdbcUrl = "jdbc:mysql://localhost:3306/akka_first"
+  val db = Database.forURL(jdbcUrl, driver = "com.mysql.jdbc.Driver", user="root", password=sys.env("DB_PASS"))
 
   override def receive: Actor.Receive = runRoute(routes)
 
@@ -39,6 +44,11 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
           } ~
           put { requestContext =>
             profiler ! Start("Whole indexing")
+            db.withDynSession {
+              val requests = TableQuery[Requests]
+              requests += Request(None, "name")
+              log.info(requests.take(1).run.toString)
+            }
             indexer ! IndexAllLunches
             requestContext.complete(StatusCodes.Accepted)
           } ~
