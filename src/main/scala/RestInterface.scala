@@ -13,7 +13,7 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success}
 import akka.pattern.{ask, pipe}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.slick.driver.MySQLDriver.simple._
+import scala.slick.driver.FreeSQLServerDriver.simple._
 import Database.dynamicSession
 
 /**
@@ -27,9 +27,8 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
   val indexer = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5002/user/indexer")
   val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5003/user/profiler")
   val searcher = context.actorOf(Props[Searcher])
-  val jdbcUrl = "jdbc:mysql://localhost:3306/akka_first"
-  val db = Database.forURL(jdbcUrl, driver = "com.mysql.jdbc.Driver", user="root", password=sys.env("DB_PASS"))
-
+  val jdbcUrl = "jdbc:jtds:sqlserver://10.64.172.21:1433/VyhladavanieTest"
+  val db = Database.forURL(jdbcUrl, driver = "net.sourceforge.jtds.jdbc.Driver", user="VyhladavanieTest", password=sys.env("MSSR_DB_PASS"))
   override def receive: Actor.Receive = runRoute(routes)
 
   def routes: Route =
@@ -46,8 +45,8 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
             profiler ! Start("Whole indexing")
             db.withDynSession {
               val requests = TableQuery[Requests]
-              requests += Request(None, "name")
-              log.info(requests.take(1).run.toString)
+              requests += Request(None, "name47")
+              log.info(requests.drop(3).take(3).run.toString)
             }
             indexer ! IndexAllLunches
             requestContext.complete(StatusCodes.Accepted)
