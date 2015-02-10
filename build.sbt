@@ -15,6 +15,7 @@ val camelVersion = "2.14.1"
 libraryDependencies ++= Seq(
   "com.typesafe.akka"         %% "akka-actor" % akkaVersion,
   "com.typesafe.akka"         %% "akka-slf4j" % akkaVersion,
+  "org.slf4j"                  % "slf4j-simple" % "1.7.10",
   "com.typesafe.akka"         %% "akka-cluster" % akkaVersion,
   "com.codemettle.akka-solr"  %% "akka-solr" % "0.10.2",
   "io.spray"                  %% "spray-can" % sprayVersion,
