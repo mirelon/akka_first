@@ -21,7 +21,7 @@ import scala.concurrent.duration._
  */
 class JsonFetcher extends Actor with ActorLogging {
   implicit val timeout = Timeout(100 seconds)
-  val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5003/user/profiler")
+  val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:2550/user/profiler")
 
   def receive = {
     case IndexAllLunches => {

@@ -1,6 +1,7 @@
 package akka_first
+
+import akka.routing.FromConfig
 import akka_first.LunchProtocol._
-import slick.{Request, Requests}
 import spray.httpx.SprayJsonSupport._
 import akka.actor._
 
@@ -14,7 +15,6 @@ import scala.util.{Failure, Success}
 import akka.pattern.{ask, pipe}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.slick.driver.FreeSQLServerDriver.simple._
-import Database.dynamicSession
 
 /**
  * @author miso
@@ -24,11 +24,9 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
 
   implicit val timeout = Timeout(100 seconds)
 
-  val indexer = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5002/user/indexer")
-  val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:5003/user/profiler")
+  val router = context.actorOf(Props.empty.withRouter(FromConfig), name="router")
+  val profiler = context.actorSelection("akka.tcp://akka-first-actor-system@localhost:2550/user/profiler")
   val searcher = context.actorOf(Props[Searcher])
-  val jdbcUrl = "jdbc:jtds:sqlserver://10.64.172.21:1433/VyhladavanieTest"
-  val db = Database.forURL(jdbcUrl, driver = "net.sourceforge.jtds.jdbc.Driver", user="VyhladavanieTest", password=sys.env("MSSR_DB_PASS"))
   override def receive: Actor.Receive = runRoute(routes)
 
   def routes: Route =
@@ -36,19 +34,14 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
       logResponse("response reached") {
         path("lunches") {
           delete { requestContext =>
-            (indexer ? DeleteIndex) andThen {
+            (router ? DeleteIndex) andThen {
               case Success(_) => requestContext.complete(StatusCodes.OK)
               case Failure(_) => requestContext.complete(StatusCodes.InternalServerError)
             }
           } ~
           put { requestContext =>
             profiler ! Start("Whole indexing")
-            db.withDynSession {
-              val requests = TableQuery[Requests]
-              requests += Request(None, "name47")
-              log.info(requests.drop(3).take(3).run.toString)
-            }
-            indexer ! IndexAllLunches
+            router ! IndexAllLunches
             requestContext.complete(StatusCodes.Accepted)
           } ~
           post {
@@ -56,7 +49,7 @@ class RestInterface extends HttpServiceActor with HttpService with ActorLogging 
               entity(as[Lunches]) { lunches => requestContext =>
                 log.debug("Got put Lunches request")
                 val responder = createResponder(requestContext)
-                indexer.ask(lunches).pipeTo(responder)
+                router.ask(lunches).pipeTo(responder)
               }
             }
           } ~
